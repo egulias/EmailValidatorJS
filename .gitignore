@@ -1,0 +1,4 @@
+node_modules
+ansible
+VagrantFile
+.vagrant
