@@ -3,6 +3,6 @@ var should = require('chai').should(),
 
 describe('Is a valid email', function() {
   it('Validates an email againts several RFCs', function(){
-    emailValidator.isValid('test').should.equal(true);
+    emailValidator.isValid('test@example.com').should.equal(true);
   });
 });
