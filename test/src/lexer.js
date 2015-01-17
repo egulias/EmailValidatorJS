@@ -4,11 +4,25 @@ var should = require('chai').should(),
     lexer = require('../../src/lexer');
 var they = it;
 
+describe('Token has public properties', function () {
+  it ('has text and type', function () {
+    var token = new lexer.Token('type', 'text');
+    token.type.should.equal('type');
+    token.text.should.equal('text');
+  });
+  it ('is equal to another token', function () {
+    var token = new lexer.Token('type', 'text');
+    var token2 = new lexer.Token('type', 'text');
+    token.equals(token2).should.equal(true);
+  });
+});
 
 describe('Lexer create a token as we expect', function () {
   var textForLexer = [
     {expected:'GENERIC', text: 'foo'},
-    {expected:'S_AT', text: '@'}
+    {expected:'S_AT', text: '@'},
+    {expected:'S_CLOSEPARENTHESIS', text: ')'},
+    {expected:'S_OPENPARENTHESIS', text: '('}
   ];
   textForLexer.forEach(function (test) {
     it ('Generates token ' + test.expected + ' for text ' + test.text, function () {
@@ -88,5 +102,28 @@ describe('We can ask if next token is any of what we are asking for', function (
   it ('is not an array', function () {
     lexer.lexer.lex('foo@bar');
     lexer.lexer.isNextTokenAny('baz').should.equal(false);
+  });
+});
+
+describe('We can search starting from the next token', function () {
+  var test = {
+      text: 'foo(baz)@bar'
+    };
+
+  it ('is found', function () {
+    lexer.lexer.lex(test.text);
+    lexer.lexer.find({type:'S_CLOSEPARENTHESIS'}).should.equal(true);
+  });
+
+  it ('is not found', function () {
+    lexer.lexer.lex(test.text);
+    lexer.lexer.find({type:'S_LOWERTHAN'}).should.equal(false);
+  });
+
+  it ('is not found because is behind', function () {
+    lexer.lexer.lex(test.text);
+    lexer.lexer.moveNext();
+    lexer.lexer.moveNext();
+    lexer.lexer.find({type:'S_OPENPARENTHESIS'}).should.equal(false);
   });
 });

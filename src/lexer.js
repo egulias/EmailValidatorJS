@@ -5,7 +5,18 @@ var rules = [
   '(.)'
 ];
 var specialTokens = {
-  '@': 'S_AT'
+  '@': 'S_AT',
+  '(': 'S_OPENPARENTHESIS',
+  ')': 'S_CLOSEPARENTHESIS'
+}
+
+var t = function Token (type, text) {
+  this.type = type;
+  this.text = text;
+
+  this.equals = function (token) {
+    return token.type === this.type;
+  };
 }
 
 function Lexer(options, rules) {
@@ -37,10 +48,10 @@ function Lexer(options, rules) {
         return false;
       }
       if (specialTokens[match]) {
-        tokens.push({type: specialTokens[match], text: match});
+        tokens.push(new t(specialTokens[match], match));
         return true;
       }
-      tokens.push({type: 'GENERIC', text: match});
+      tokens.push(new t('GENERIC', match));
       return true;
     }, this);
 
@@ -61,7 +72,7 @@ function Lexer(options, rules) {
     if (!(token instanceof Object)) {
       return false;
     }
-    return undefined !== this.lookahead && this.lookahead.type === token.type;
+    return undefined !== this.lookahead && this.lookahead.equals(token);
   };
 
   this.isNextTokenAny = function (wantedTokens) {
@@ -73,8 +84,17 @@ function Lexer(options, rules) {
         return this.isNextToken(token);
       }, this).length >= 1);
   };
+
+  this.find = function (token) {
+    var startPosition = position + 1;
+    for (var i = startPosition; i < tokens.length; i++) {
+      if (tokens[i].equals(token)) {
+        return true;
+      }
+    }
+    return false;
+  };
 }
 
-module.exports = {
-  lexer: new Lexer({}, rules)
-};
+module.exports.lexer = new Lexer({}, rules);
+module.exports.Token = t;
