@@ -22,7 +22,29 @@ describe('Lexer create a token as we expect', function () {
     {expected:'GENERIC', text: 'foo'},
     {expected:'S_AT', text: '@'},
     {expected:'S_CLOSEPARENTHESIS', text: ')'},
-    {expected:'S_OPENPARENTHESIS', text: '('}
+    {expected:'S_OPENPARENTHESIS', text: '('},
+    {expected:'S_CR', text: '\r'},
+    {expected:'S_HTAB', text: '\t'},
+    {expected:'CRLF', text: '\r\n'},
+    {expected:'S_LF', text: '\n'},
+    {expected:'S_SP', text: ' '},
+    {expected:'S_IPV6TAG', text: 'IPv6'},
+    {expected:'S_DOUBLECOLON', text: '::'},
+    {expected:'S_COLON', text: ':'},
+    {expected:'S_DOT', text: '.'},
+    {expected:'S_DQUOTE', text: '\"'},
+    {expected:'S_HYPHEN', text: '-'},
+    {expected:'S_BACKSLASH', text: '\\'},
+    {expected:'S_SLASH', text: '/'},
+    {expected:'S_LOWERTHAN', text: '<'},
+    {expected:'S_GREATERTHAN', text: '>'},
+    {expected:'S_OPENBRACKET', text: '['},
+    {expected:'S_CLOSEBRACKET', text: ']'},
+    {expected:'S_SEMICOLON', text: ';'},
+    {expected:'S_COMMA', text: ','},
+    {expected:'S_OPENQBRACKET', text: '{'},
+    {expected:'S_CLOSEQBRACKET', text: '}'}
+    //{expected:'S_EMPTY', text: ''}
   ];
   textForLexer.forEach(function (test) {
     it ('Generates token ' + test.expected + ' for text ' + test.text, function () {

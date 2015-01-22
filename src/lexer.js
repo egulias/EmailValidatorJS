@@ -2,12 +2,44 @@
 
 var rules = [
   '([a-zA-Z_]+[46]?)',
-  '(.)'
+  '[0-9]+',
+  '([^::])',
+  //'::',
+  "\r\n",
+  ' +?'
 ];
+var invalid = [
+  String.fromCharCode(31),
+  String.fromCharCode(226),
+  String.fromCharCode(0),
+  ];
+
 var specialTokens = {
   '@': 'S_AT',
   '(': 'S_OPENPARENTHESIS',
-  ')': 'S_CLOSEPARENTHESIS'
+  ')': 'S_CLOSEPARENTHESIS',
+  '\r': 'S_CR',
+  '\t': 'S_HTAB',
+  '\r\n': 'CRLF',
+  '\n': 'S_LF',
+  ' ': 'S_SP',
+  'IPv6': 'S_IPV6TAG',
+  '::': 'S_DOUBLECOLON',
+  ':': 'S_COLON',
+  '.': 'S_DOT',
+  '\"': 'S_DQUOTE',
+  '-': 'S_HYPHEN',
+  '\\': 'S_BACKSLASH',
+  '/': 'S_SLASH',
+  '<': 'S_LOWERTHAN',
+  '>': 'S_GREATERTHAN',
+  '[': 'S_OPENBRACKET',
+  ']': 'S_CLOSEBRACKET',
+  ';': 'S_SEMICOLON',
+  ',': 'S_COMMA',
+  '{': 'S_OPENQBRACKET',
+  '}': 'S_CLOSEQBRACKET'
+  //'': 'S_EMPTY'
 }
 
 var t = function Token (type, text) {
@@ -36,18 +68,28 @@ function Lexer(options, rules) {
   };
 
   this.lex = function (src) {
-    var matches = [];
     var src = src;
-
 
     this.reset();
     var regexp = RegExp(this.rules.join('|'), 'igm');
     var initialMatches = src.split(regexp);
+    var cr = 0;
     initialMatches.filter(function(match) {
       if (match === '' || match === undefined) {
         return false;
       }
       if (specialTokens[match]) {
+        if (specialTokens[match] === "S_CR") {
+          console.log(initialMatches);
+          cr++;
+        }
+        if (specialTokens[match] === "S_LF" && cr >= 1) {
+          cr = 0;
+          tokens.pop();
+          tokens.push(new t(specialTokens["\r\n"], "\r\n"));
+          return true;
+        }
+
         tokens.push(new t(specialTokens[match], match));
         return true;
       }
