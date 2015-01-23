@@ -2,7 +2,6 @@
 
 var should = require('chai').should(),
     lexer = require('../../src/lexer');
-var they = it;
 
 describe('Token has public properties', function () {
   it ('has text and type', function () {

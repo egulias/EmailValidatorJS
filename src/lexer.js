@@ -11,8 +11,8 @@ var rules = [
 var invalid = [
   String.fromCharCode(31),
   String.fromCharCode(226),
-  String.fromCharCode(0),
-  ];
+  String.fromCharCode(0)
+];
 
 var specialTokens = {
   '@': 'S_AT',
@@ -52,6 +52,30 @@ var t = function Token (type, text) {
 }
 
 function Lexer(options, rules) {
+  this.at = 'S_AT';
+  this.openparenthesis = 'S_OPENPARENTHESIS';
+  this.closeparenthesis = 'S_CLOSEPARENTHESIS';
+  this.carriage = 'S_CR';
+  this.tab = 'S_HTAB';
+  this.carriagelinefeed = 'CRLF';
+  this.linefeed = 'S_LF';
+  this.space = 'S_SP';
+  this.IPv6 = 'S_IPV6TAG';
+  this.doublecolon = 'S_DOUBLECOLON';
+  this.colon = 'S_COLON';
+  this.dot = 'S_DOT';
+  this.dquote = 'S_DQUOTE';
+  this.hyphen = 'S_HYPHEN';
+  this.backslash = 'S_BACKSLASH';
+  this.slash = 'S_SLASH';
+  this.lowerthan = 'S_LOWERTHAN';
+  this.greaterthan = 'S_GREATERTHAN';
+  this.openbracket = 'S_OPENBRACKET';
+  this.closebracket = 'S_CLOSEBRACKET';
+  this.semicolon = 'S_SEMICOLON';
+  this.comma = 'S_COMMA';
+  this.openqbracket= 'S_OPENQBRACKET';
+  this.closeqbracket = 'S_CLOSEQBRACKET';
   this.token = {};
   //this.options = options || marked.defaults;
   this.rules = rules;
