@@ -74,8 +74,9 @@ function Lexer(options, rules) {
   this.closebracket = 'S_CLOSEBRACKET';
   this.semicolon = 'S_SEMICOLON';
   this.comma = 'S_COMMA';
-  this.openqbracket= 'S_OPENQBRACKET';
+  this.openqbracket = 'S_OPENQBRACKET';
   this.closeqbracket = 'S_CLOSEQBRACKET';
+  this.generic = 'GENERIC';
   this.token = {};
   //this.options = options || marked.defaults;
   this.rules = rules;
@@ -83,7 +84,11 @@ function Lexer(options, rules) {
 
   var tokens = [];
   var position = 1;
-
+  var previous = {
+    equals: function (token) {
+      return false;
+    }
+  };
 
   this.reset = function () {
     tokens = [];
@@ -92,7 +97,6 @@ function Lexer(options, rules) {
   };
 
   this.lex = function (src) {
-    var src = src;
 
     this.reset();
     var regexp = RegExp(this.rules.join('|'), 'igm');
@@ -104,7 +108,6 @@ function Lexer(options, rules) {
       }
       if (specialTokens[match]) {
         if (specialTokens[match] === "S_CR") {
-          console.log(initialMatches);
           cr++;
         }
         if (specialTokens[match] === "S_LF" && cr >= 1) {
@@ -117,7 +120,7 @@ function Lexer(options, rules) {
         tokens.push(new t(specialTokens[match], match));
         return true;
       }
-      tokens.push(new t('GENERIC', match));
+      tokens.push(new t(this.generic, match));
       return true;
     }, this);
 
@@ -128,6 +131,7 @@ function Lexer(options, rules) {
 
   this.moveNext = function () {
     position = position + 1;
+    previous = this.token;
     this.token = this.lookahead;
     this.lookahead = tokens[position];
 
@@ -159,6 +163,10 @@ function Lexer(options, rules) {
       }
     }
     return false;
+  };
+
+  this.getPrevious = function () {
+    return previous;
   };
 }
 

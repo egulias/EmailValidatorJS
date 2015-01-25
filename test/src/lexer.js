@@ -148,3 +148,16 @@ describe('We can search starting from the next token', function () {
     lexer.lexer.find({type:'S_OPENPARENTHESIS'}).should.equal(false);
   });
 });
+
+describe('I can get previous Token', function () {
+  var test = {
+    text: 'foo(baz)@bar'
+  };
+
+  it ('Has previous', function () {
+    lexer.lexer.lex(test.text);
+    lexer.lexer.moveNext();
+    lexer.lexer.moveNext();
+    lexer.lexer.getPrevious().equals({type: lexer.lexer.openparenthesis}).should.equal(true);
+  });
+});

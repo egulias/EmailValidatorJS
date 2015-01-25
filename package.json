@@ -26,5 +26,9 @@
   "dependencies": {
     "lexxy": "^0.4.0",
     "tokenizer": "^1.1.2"
+  },
+  "scripts" : {
+    "test": "./node_modules/.bin/mocha test/src/"
+
   }
 }
