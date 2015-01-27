@@ -3,32 +3,32 @@
   "version": "0.0.1-alpha",
   "description": "RFCs compliant email validator",
   "main": "emailValidator.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "repository": "git@github.com:egulias/EmailValidatorJS.git",
+
   "keywords": [
     "email",
     "validation",
     "email",
     "validation"
   ],
+
   "author": "Eduardo Gulias Davis",
   "license": "MIT",
+
   "devDependencies": {
     "chai": "^1.10.0",
-    "grunt": "^0.4.5",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-nodeunit": "~0.4.1",
-    "grunt-contrib-uglify": "~0.5.0",
     "mocha": "^2.1.0",
     "regexpu": "^0.3.1"
   },
+
   "dependencies": {
     "lexxy": "^0.4.0",
     "tokenizer": "^1.1.2"
   },
-  "scripts" : {
-    "test": "./node_modules/.bin/mocha test/src/"
 
+  "scripts": {
+    "test": "./node_modules/.bin/_mocha test/src/**/*.js",
+    "cover": "./node_modules/.bin/istanbul cover -- ./node_modules/.bin/_mocha test/src/**/*.js",
+    "lint": "./node_modules/.bin/eslint src/*.js test/src/*.js"
   }
 }

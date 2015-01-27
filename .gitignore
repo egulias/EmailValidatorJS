@@ -2,3 +2,6 @@ node_modules
 ansible
 VagrantFile
 .vagrant
+coverage
+npm-debug.log
+.DS_Store
