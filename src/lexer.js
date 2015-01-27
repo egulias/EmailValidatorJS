@@ -8,6 +8,7 @@ var rules = [
   "\r\n",
   ' +?'
 ];
+
 var invalid = [
   String.fromCharCode(31),
   String.fromCharCode(226),
@@ -42,14 +43,22 @@ var specialTokens = {
   //'': 'S_EMPTY'
 }
 
-var t = function Token (type, text) {
+function Token (type, text) {
   this.type = type;
   this.text = text;
-
-  this.equals = function (token) {
-    return token.type === this.type;
-  };
 }
+
+Token.prototype.equals = function (token) {
+  return token.type === this.type;
+};
+
+var tokens = [];
+var position = 1;
+var previous = {
+  equals: function (token) {
+    return false;
+  }
+};
 
 function Lexer(options, rules) {
   this.at = 'S_AT';
@@ -78,97 +87,96 @@ function Lexer(options, rules) {
   this.closeqbracket = 'S_CLOSEQBRACKET';
   this.generic = 'GENERIC';
   this.token = {};
-  //this.options = options || marked.defaults;
+  // this.options = options || marked.defaults;
   this.rules = rules;
-  this.lookahead = {};
 
-  var tokens = [];
-  var position = 1;
-  var previous = {
-    equals: function (token) {
-      return false;
-    }
-  };
-
-  this.reset = function () {
-    tokens = [];
-    position = 1;
-    this.token = {};
-  };
-
-  this.lex = function (src) {
-
-    this.reset();
-    var regexp = RegExp(this.rules.join('|'), 'igm');
-    var initialMatches = src.split(regexp);
-    var cr = 0;
-    initialMatches.filter(function(match) {
-      if (match === '' || match === undefined) {
-        return false;
-      }
-      if (specialTokens[match]) {
-        if (specialTokens[match] === "S_CR") {
-          cr++;
-        }
-        if (specialTokens[match] === "S_LF" && cr >= 1) {
-          cr = 0;
-          tokens.pop();
-          tokens.push(new t(specialTokens["\r\n"], "\r\n"));
-          return true;
-        }
-
-        tokens.push(new t(specialTokens[match], match));
-        return true;
-      }
-      tokens.push(new t(this.generic, match));
-      return true;
-    }, this);
-
-    this.lookahead = tokens[1];
-    this.token = tokens[0];
-    return this.tokens;
-  };
-
-  this.moveNext = function () {
-    position = position + 1;
-    previous = this.token;
-    this.token = this.lookahead;
-    this.lookahead = tokens[position];
-
-    return (this.lookahead !== undefined);
-  };
-
-  this.isNextToken = function (token) {
-    if (!(token instanceof Object)) {
-      return false;
-    }
-    return undefined !== this.lookahead && this.lookahead.equals(token);
-  };
-
-  this.isNextTokenAny = function (wantedTokens) {
-    if (!(wantedTokens instanceof Array)) {
-      return false;
-    }
-
-    return undefined !== this.lookahead && (wantedTokens.filter(function (token) {
-        return this.isNextToken(token);
-      }, this).length >= 1);
-  };
-
-  this.find = function (token) {
-    var startPosition = position + 1;
-    for (var i = startPosition; i < tokens.length; i++) {
-      if (tokens[i].equals(token)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  this.getPrevious = function () {
-    return previous;
-  };
+  // About "privacy" ...
+  // I think this could be a solution
+  //
+  // this.rules =  Object.freeze({ key: 'value' });
+  // Tell me what you think
 }
 
+Lexer.prototype.reset = function () {
+  tokens = [];
+  position = 1;
+  this.token = {};
+};
+
+Lexer.prototype.lex = function (src) {
+
+  this.reset();
+
+  var regexp = RegExp(this.rules.join('|'), 'igm');
+  var initialMatches = src.split(regexp);
+  var cr = 0;
+  initialMatches.filter(function(match) {
+    if (match === '' || match === undefined) {
+      return false;
+    }
+    if (specialTokens[match]) {
+      if (specialTokens[match] === "S_CR") {
+        cr++;
+      }
+      if (specialTokens[match] === "S_LF" && cr >= 1) {
+        cr = 0;
+        tokens.pop();
+        tokens.push(new Token(specialTokens["\r\n"], "\r\n"));
+        return true;
+      }
+
+      tokens.push(new Token(specialTokens[match], match));
+      return true;
+    }
+    tokens.push(new Token(this.generic, match));
+    return true;
+  }, this);
+
+  this.lookahead = tokens[1];
+  this.token = tokens[0];
+  return this.tokens;
+};
+
+Lexer.prototype.moveNext = function () {
+  position = position + 1;
+  previous = this.token;
+  this.token = this.lookahead;
+  this.lookahead = tokens[position];
+
+  return this.lookahead !== undefined;
+};
+
+Lexer.prototype.isNextToken = function (token) {
+  if (!(token instanceof Object)) {
+    return false;
+  }
+
+  return undefined !== this.lookahead && this.lookahead.equals(token);
+};
+
+Lexer.prototype.isNextTokenAny = function (wantedTokens) {
+  if (!(wantedTokens instanceof Array)) {
+    return false;
+  }
+
+  return undefined !== this.lookahead && (wantedTokens.filter(function (token) {
+      return this.isNextToken(token);
+    }, this).length >= 1);
+};
+
+Lexer.prototype.find = function (token) {
+  var startPosition = position + 1;
+  for (var i = startPosition; i < tokens.length; i++) {
+    if (tokens[i].equals(token)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+Lexer.prototype.getPrevious = function () {
+  return previous;
+};
+
 module.exports.lexer = new Lexer({}, rules);
-module.exports.Token = t;
+module.exports.Token = Token;
