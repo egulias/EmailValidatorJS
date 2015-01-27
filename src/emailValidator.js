@@ -8,7 +8,9 @@ function EmailValidator() {
       parser.parser.parse(email);
     }
     catch (err) {
-      console.log(err);
+      if(window.console){
+       console.log(err); 
+      }
       return false;
     }
 
