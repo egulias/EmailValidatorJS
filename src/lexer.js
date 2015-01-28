@@ -52,13 +52,6 @@ Token.prototype.equals = function (token) {
   return token.type === this.type;
 };
 
-var tokens = [];
-var position = 1;
-var previous = {
-  equals: function (token) {
-    return false;
-  }
-};
 
 function Lexer(options, rules) {
   this.at = 'S_AT';
@@ -90,16 +83,19 @@ function Lexer(options, rules) {
   // this.options = options || marked.defaults;
   this.rules = rules;
 
-  // About "privacy" ...
-  // I think this could be a solution
-  //
-  // this.rules =  Object.freeze({ key: 'value' });
-  // Tell me what you think
+  this.tokens = [];
+  this.position = 1;
+  this.previous = {
+    equals: function (token) {
+      return false;
+    }
+  };
+
 }
 
 Lexer.prototype.reset = function () {
-  tokens = [];
-  position = 1;
+  this.tokens = [];
+  this.position = 1;
   this.token = {};
 };
 
@@ -120,28 +116,28 @@ Lexer.prototype.lex = function (src) {
       }
       if (specialTokens[match] === "S_LF" && cr >= 1) {
         cr = 0;
-        tokens.pop();
-        tokens.push(new Token(specialTokens["\r\n"], "\r\n"));
+        this.tokens.pop();
+        this.tokens.push(new Token(specialTokens["\r\n"], "\r\n"));
         return true;
       }
 
-      tokens.push(new Token(specialTokens[match], match));
+      this.tokens.push(new Token(specialTokens[match], match));
       return true;
     }
-    tokens.push(new Token(this.generic, match));
+    this.tokens.push(new Token(this.generic, match));
     return true;
   }, this);
 
-  this.lookahead = tokens[1];
-  this.token = tokens[0];
+  this.lookahead = this.tokens[1];
+  this.token = this.tokens[0];
   return this.tokens;
 };
 
 Lexer.prototype.moveNext = function () {
-  position = position + 1;
+  this.position = this.position + 1;
   previous = this.token;
   this.token = this.lookahead;
-  this.lookahead = tokens[position];
+  this.lookahead = this.tokens[this.position];
 
   return this.lookahead !== undefined;
 };
@@ -165,9 +161,10 @@ Lexer.prototype.isNextTokenAny = function (wantedTokens) {
 };
 
 Lexer.prototype.find = function (token) {
-  var startPosition = position + 1;
-  for (var i = startPosition; i < tokens.length; i++) {
-    if (tokens[i].equals(token)) {
+  var startPosition = this.position + 1;
+  var len = this.tokens.length;
+  for (var i = startPosition; i < len; i++) {
+    if (this.tokens[i].equals(token)) {
       return true;
     }
   }
