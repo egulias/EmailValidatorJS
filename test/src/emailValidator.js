@@ -16,6 +16,8 @@ describe('Is a valid email', function() {
 var invalidEmails = [
   'user  name@example.com',
   //'test@example.com test',
+  'user   name@example.com',
+  'example.@example.co.uk'
 ];
 invalidEmails.forEach(function (email) {
     describe('[' + email + '] is an invalid email', function() {

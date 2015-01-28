@@ -101,7 +101,7 @@ LocalPartParser.prototype.parse = function () {
 
     this.checkConsecutiveDots();
 
-    if (lexer.token.type === lexer.dot && lexer.isNextToken(lexer.at)) {
+    if (lexer.token.equals({type: lexer.dot}) && lexer.isNextToken({type: lexer.at})) {
       throw EndWithDot;
     }
 
