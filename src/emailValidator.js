@@ -6,7 +6,7 @@ function EmailValidator() { }
 
 EmailValidator.prototype.isValid = function (email, strict) {
   try {
-    parser.parser.parse(email);
+    parser.parse(email);
   }
   catch (err) {
     return false;

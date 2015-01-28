@@ -22,6 +22,26 @@ var ExpectingATEXT = {
   message: 'ATEXT was expected'
 };
 
+var ConsecutiveCRLFinFWS = {
+  name: 'Two CRLF in FWX',
+  message: ''
+};
+
+var CRLFAtFWSEnd = {
+  name: 'CRLFAtFWSEnd',
+  message: 'CRLF at the end of FWS'
+};
+
+var CRAndNoLF = {
+  name: 'CRAndNoLF',
+  message: 'Found CR but no LF'
+}
+
+var ATEXTAfterCFWS = {
+  name: 'ATEXTAfterCFWS',
+  message: 'Found ATEXT after CFWS'
+
+};
 
 function parseDQUOTE(closingQuote) {
   return false; // ?
@@ -123,7 +143,7 @@ Parser.prototype.isFWS = function () {
     return false;
   }
 
-  return lexer.token.equals({type: lexer.sp}) ||
+  return lexer.token.equals({type: lexer.space}) ||
     lexer.token.equals({type: lexer.htab}) ||
     lexer.token.equals({type: lexer.cr}) ||
     lexer.token.equals({type: lexer.lf}) ||
@@ -132,6 +152,39 @@ Parser.prototype.isFWS = function () {
 
 Parser.prototype.parseFWS = function () {
 
+  function checkCRLFInFWS() {
+    if (lexer.token.equals({type: lexer.crlf})) {
+      return;
+    }
+    if (lexer.isNextToken({type: lexer.crlf})) {
+      throw ConsecutiveCRLFinFWS;
+    }
+    if (!lexer.isNextTokenAny([{type: lexer.space}, {type: lexer.htab}])) {
+      throw CRLFAtFWSEnd;
+    }
+  }
+
+  checkCRLFInFWS();
+
+  var previous = lexer.getPrevious();
+
+  if (lexer.token.equals({type: lexer.cr})) {
+    throw CRAndNoLF;
+  }
+
+  if (lexer.isNextToken({type: lexer.generic}) && !previous.equals({type: lexer.at})) {
+    throw ATEXTAfterCFWS;
+  }
+
+  if (lexer.token.equals({type: lexer.lf}) || lexer.token.equals({type: lexer.null})) {
+    throw ExpectingATEXT;
+  }
+
+  if (lexer.isNextToken({type: lexer.at}) || previous.equals({type: lexer.at})) {
+    //$this->warnings[] = EmailValidator::DEPREC_CFWS_NEAR_AT;
+  } else {
+    //$this->warnings[] = EmailValidator::CFWS_FWS;
+  }
 };
 
 function hasLocalPart () {
