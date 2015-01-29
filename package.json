@@ -3,9 +3,7 @@
   "version": "0.0.1-alpha",
   "description": "RFCs compliant email validator",
   "main": "emailValidator.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "repository": "git@github.com:egulias/EmailValidatorJS.git",
   "keywords": [
     "email",
     "validation",
@@ -15,20 +13,22 @@
   "author": "Eduardo Gulias Davis",
   "license": "MIT",
   "devDependencies": {
+    "browserify": "^8.1.1",
     "chai": "^1.10.0",
-    "grunt": "^0.4.5",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-nodeunit": "~0.4.1",
-    "grunt-contrib-uglify": "~0.5.0",
     "mocha": "^2.1.0",
-    "regexpu": "^0.3.1"
+    "regexpu": "^0.3.1",
+    "uglify": "^0.1.1",
+    "uglifyjs": "^2.3.6"
   },
   "dependencies": {
     "lexxy": "^0.4.0",
     "tokenizer": "^1.1.2"
   },
-  "scripts" : {
-    "test": "./node_modules/.bin/mocha test/src/"
-
+  "scripts": {
+    "test": "node ./node_modules/.bin/_mocha test/src/**/*.js",
+    "cover": "node ./node_modules/.bin/istanbul cover -- ./node_modules/.bin/_mocha test/src/**/*.js",
+    "lint": "node ./node_modules/.bin/eslint src/*.js test/src/*.js",
+    "compile": "mkdir -p build && node ./node_modules/.bin/browserify src/*js -o build/emailValidator.brower.js",
+    "uglify": "node ./node_modules/.bin/uglify build/emailValidator.browser.js -o build/emailValidator.min.js -cm --screw-ie-8"
   }
 }

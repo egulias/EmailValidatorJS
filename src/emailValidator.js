@@ -1,19 +1,17 @@
 'use strict';
 
-var parser = require('./parser');
+var parser = require('./parser').parser;
 
-function EmailValidator() {
-  this.isValid = function (email, strict) {
-    try {
-      parser.parser.parse(email);
-    }
-    catch (err) {
-      console.log(err);
-      return false;
-    }
+function EmailValidator() { }
 
-    return true;
-  };
-}
+EmailValidator.prototype.isValid = function (email, strict) {
+  try {
+    parser.parse(email);
+  }
+  catch (err) {
+    return false;
+  }
+  return true;
+};
 
 module.exports = new EmailValidator();
