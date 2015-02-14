@@ -35,17 +35,36 @@ var CRLFAtFWSEnd = {
 var CRAndNoLF = {
   name: 'CRAndNoLF',
   message: 'Found CR but no LF'
-}
+};
 
 var ATEXTAfterCFWS = {
   name: 'ATEXTAfterCFWS',
   message: 'Found ATEXT after CFWS'
+};
 
+var HyphenEndedDomain = {
+  name: 'HyphenEndedDomain',
+  message: 'Domain part ends with hyphen'
+};
+
+var CharNotAllowedInDomain = {
+  name: 'CharNotAllowedInDomain',
+  message: 'Character not allowed in Domain part'
+};
+
+var ConsecutiveATs = {
+  name: 'ConsecutiveATs',
+  message: 'Consecutive AT (@) found'
+};
+
+var CommaInDomain = {
+  name: 'CommaInDomain',
+  message: 'CommaFoundInDomain'
 };
 
 function parseDQUOTE(closingQuote) {
   return false; // ?
-};
+}
 
 function isInvalidToken(token, closingQuote) {
   var forbidden = [
@@ -66,15 +85,11 @@ function isInvalidToken(token, closingQuote) {
       throw ExpectingATEXT;
     }
   });
-};
+}
 
 
 function LocalPartParser(lexer) {
-
   Parser.call(this, lexer);
-
-
-
 }
 
 LocalPartParser.prototype = Object.create(Parser.prototype);
@@ -113,8 +128,132 @@ LocalPartParser.prototype.parse = function () {
     }
     lexer.moveNext();
   }
+
+  return lexer;
 };
 
+function DomainPartParser(lexer) {
+  Parser.call(this, lexer);
+
+
+}
+
+DomainPartParser.prototype = Object.create(Parser.prototype);
+DomainPartParser.prototype.constructor = DomainPartParser;
+DomainPartParser.prototype.parse = function () {
+  var domainMaxLength = 254;
+
+  console.log(lexer.token);
+  lexer.moveNext();
+  console.log(lexer.token);
+  if (lexer.token.equals(lexer.dot)) {
+    throw StartWithDot;
+  }
+
+  //if (this.lexer.token['type'] === EmailLexer::S_EMPTY) {
+  //  throw new \InvalidArgumentException('ERR_NODOMAIN');
+  //}
+
+  if (lexer.token.equals(lexer.hyphen)) {
+    throw HyphenEndedDomain;
+  }
+
+  if (lexer.token.equals(lexer.openparenthesis)) {
+    //this.warnings[] = EmailValidator::DEPREC_COMMENT;
+    //this.parseDomainComments();
+  }
+
+  var domain = this.doParseDomainPart();
+
+  var prev = lexer.getPrevious();
+  var length = domain.length;
+
+  if (prev.equals(lexer.dot)) {
+    throw EndWithDot;
+  }
+
+  if (prev.equals(lexer.hyphen)) {
+    throw HyphenEndedDomain;
+  }
+
+  if (length > domainMaxLength) {
+    //this.warnings[] = EmailValidator::RFC5322_DOMAIN_TOOLONG;
+  }
+
+  if (prev.equals(lexer.carriage)) {
+    throw CRLFAtFWSEnd;
+  }
+
+  this.domainPart = domain;
+};
+DomainPartParser.prototype.doParseDomainPart = function () {
+  console.log(lexer.token);
+  var domain = '';
+  do {
+    if (lexer.token.equals(lexer.semicolon)) {
+      throw ExpectingATEXT;
+    }
+
+    var prev = lexer.getPrevious();
+
+    if (lexer.token.equals(lexer.slash)) {
+      throw CharNotAllowedInDomain;
+    }
+
+    if (lexer.token.equals(lexer.openparenthesis)) {
+      this.parseComments();
+      lexer.moveNext();
+    }
+
+    this.checkConsecutiveDots();
+    this.checkDomainPartExceptions(prev);
+
+    if (this.hasBrackets()) {
+      this.parseDomainLiteral();
+    }
+
+    this.checkLabelLength(prev);
+
+    if (this.isFWS()) {
+      this.parseFWS();
+    }
+
+    domain += lexer.token.text;
+    lexer.moveNext();
+  } while (lexer.token);
+
+  return domain;
+};
+DomainPartParser.prototype.checkDomainPartExceptions = function (prev) {
+  if (lexer.token.equals(lexer.comma)) {
+    throw CommaInDomain;
+  }
+
+  if (lexer.token.equals(lexer.at)) {
+    throw ConsecutiveATs;
+  }
+
+  if (lexer.token.equals(lexer.openbracket) && !prev.equals(lexer.at)) {
+    throw ExpectingATEXT;
+  }
+
+  if (lexer.token.equals(lexer.hyphen) && lexer.isNextToken(lexer.dot)) {
+    throw HyphenEndedDomain;
+  }
+
+  if (lexer.token.equals(lexer.backslash) && lexer.isNextToken(lexer.generic)) {
+    throw ExpectingATEXT;
+  }
+};
+
+DomainPartParser.prototype.hasBrackets = function () {
+  return false;
+};
+DomainPartParser.prototype.parseDomainLiteral = function () {
+
+};
+DomainPartParser.prototype.checkLabelLength = function (prev) {
+};
 function Parser(lexer) {}
 
 Parser.prototype.checkDQUOTE = function (closingQuote) {
@@ -181,9 +320,9 @@ Parser.prototype.parseFWS = function () {
   }
 
   if (lexer.isNextToken({type: lexer.at}) || previous.equals({type: lexer.at})) {
-    //$this->warnings[] = EmailValidator::DEPREC_CFWS_NEAR_AT;
+    //this.warnings[] = EmailValidator::DEPREC_CFWS_NEAR_AT;
   } else {
-    //$this->warnings[] = EmailValidator::CFWS_FWS;
+    //this.warnings[] = EmailValidator::CFWS_FWS;
   }
 };
 
@@ -191,7 +330,7 @@ function hasLocalPart () {
   if (lexer.token.type === lexer.at) {
     throw NoLocalPart;
   }
-};
+}
 
 function EmailParser () { }
 
@@ -199,7 +338,9 @@ EmailParser.prototype.parse = function (email) {
   lexer.lex(email);
   hasLocalPart();
   var localPartParser = new LocalPartParser(lexer);
-  localPartParser.parse();
+  var lexerWithState = localPartParser.parse();
+  var domainPartParser = new DomainPartParser(lexerWithState);
+  domainPartParser.parse();
 };
 
 module.exports.parser = new EmailParser();

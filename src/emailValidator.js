@@ -9,6 +9,7 @@ EmailValidator.prototype.isValid = function (email, strict) {
     parser.parse(email);
   }
   catch (err) {
+    console.log(err);
     return false;
   }
   return true;
